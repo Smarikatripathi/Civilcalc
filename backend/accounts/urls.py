@@ -3,21 +3,31 @@ from .views import (
     RegisterView,
     ProfileView,
     LogoutView,
-    RequestPasswordResetView,
-    ResetPasswordView,
-    VerifyEmailView
+    VerifyEmailView,
+    login_view,
+    forgot_password,
+    reset_password,
 )
 
 urlpatterns = [
-    # Authentication
+
     path('register/', RegisterView.as_view(), name='register'),
-    path('profile/', ProfileView.as_view(), name='profile'),
+    path('login/', login_view, name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
 
-    # Email verification
+  
+    path('profile/', ProfileView.as_view(), name='profile'),
+
+  
     path('verify/<int:uid>/<str:token>/', VerifyEmailView.as_view(), name='verify-email'),
 
-    #Password reset
-    path('password-reset/', RequestPasswordResetView.as_view(), name='password-reset-request'),
-    path('reset/<int:uid>/<str:token>/', ResetPasswordView.as_view(), name='password-reset'),
+    # Step 1: send email link
+    path('forgot-password/', forgot_password, name='forgot-password'),
+
+    # Step 2: reset password using link
+    path(
+        'reset-password/<uidb64>/<token>/',
+        reset_password,
+        name='reset-password'
+    ),
 ]

@@ -10,10 +10,12 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: any) => {
     e.preventDefault()
     setLoading(true)
+    setError('')
 
     try {
       const res = await fetch('http://127.0.0.1:8000/api/token/', {
@@ -35,11 +37,11 @@ export default function LoginPage() {
 
         window.location.href = '/'
       } else {
-        alert(data.detail || 'Invalid credentials')
+        setError(data.detail || 'Invalid email or password')
       }
-    } catch (error) {
-      console.log(error)
-      alert('Server error')
+    } catch (err) {
+      console.log(err)
+      setError('Invalid email or password. Please try again.')
     }
 
     setLoading(false)
@@ -95,7 +97,10 @@ export default function LoginPage() {
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      setError('')
+                    }}
                     placeholder="Enter email"
                     className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-4 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-950"
                     required
@@ -113,7 +118,10 @@ export default function LoginPage() {
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      setError('')
+                    }}
                     placeholder="Enter password"
                     className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-12 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-950"
                     required
@@ -127,6 +135,20 @@ export default function LoginPage() {
                     {showPassword ? <EyeOff /> : <Eye />}
                   </button>
                 </div>
+
+                {/* ERROR MESSAGE */}
+                {error && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {error}
+                  </p>
+                )}
+              </div>
+
+              {/* FORGOT PASSWORD */}
+              <div className="text-right text-sm">
+                <Link href="/forgot-password" className="text-blue-600 hover:underline">
+                  Forgot Password?
+                </Link>
               </div>
 
               {/* BUTTON */}
