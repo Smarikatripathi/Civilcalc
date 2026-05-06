@@ -13,8 +13,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.core.mail import send_mail
 
-from accounts.serializers import RegisterSerializer, ProfileSerializer
+from accounts.serializers import ConverterSerializer, RegisterSerializer, ProfileSerializer, ResourceSerializer, CalculatorSerializer
+from .models import Converter, Resource, Calculator
 from accounts.tokens import account_activation_token
+from .models import Converter, Resource
 
 User = get_user_model()
 
@@ -171,3 +173,49 @@ def reset_password(request, uidb64, token):
     user.save()
 
     return Response({"message": "Password reset successful"})
+
+@api_view(['GET'])
+def get_resources(request):
+    data = Resource.objects.all()
+    serializer = ResourceSerializer(data, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+def get_calculators(request):
+    data = Calculator.objects.all()
+    serializer = CalculatorSerializer(data, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+def get_converters(request):
+    data = Converter.objects.all()
+    serializer = ConverterSerializer(data, many=True)
+    return Response(serializer.data)
+
+# GET all categories
+class ResourceListView(APIView):
+    def get(self, request):
+        resources = Resource.objects.all()
+        serializer = ResourceSerializer(resources, many=True)
+        return Response(serializer.data)
+
+
+# GET by category
+class ResourceByCategoryView(APIView):
+    def get(self, request, category):
+        resources = Resource.objects.filter(category=category)
+        serializer = ResourceSerializer(resources, many=True)
+        return Response(serializer.data)
+
+
+# GET single resource (with subitems + files)
+class ResourceDetailView(APIView):
+    def get(self, request, category, sub):
+        try:
+            resource = Resource.objects.get(category=category, id=sub)
+            serializer = ResourceSerializer(resource)
+            return Response(serializer.data)
+        except Resource.DoesNotExist:
+            return Response({"error": "Not found"}, status=404)
