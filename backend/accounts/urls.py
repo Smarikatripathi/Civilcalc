@@ -6,6 +6,8 @@ from .views import (
     ResourceListView,
     ResourceByCategoryView,
     ResourceDetailView,
+    ResourceByIdView,
+    ResourceSlugView,
     VerifyEmailView,
     get_calculators,
     get_converters,
@@ -33,9 +35,11 @@ urlpatterns = [
     # Step 2: reset password using link
     path('reset-password/<uidb64>/<token>/', reset_password, name='reset-password'),
 
-    path("api/resources/", get_resources),
-    path("api/calculators/", get_calculators),
-    path("api/converters/", get_converters),
+    path("resources/", get_resources),
+    path("resources/<int:id>/", ResourceByIdView.as_view()),
+    path("resources/slug/<slug:slug>/", ResourceSlugView.as_view()),
+    path("calculators/", get_calculators),
+    path("converters/", get_converters),
 
     path("resources/", ResourceListView.as_view()),
     path("resources/<str:category>/", ResourceByCategoryView.as_view()),

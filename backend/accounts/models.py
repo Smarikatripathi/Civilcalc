@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.text import slugify
 from ckeditor.fields import RichTextField
 
 class User(AbstractUser):
@@ -34,23 +35,49 @@ class Resource(models.Model):
     ]
 
     title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
     description = RichTextField()
     category = models.CharField(choices=CATEGORY_CHOICES, max_length=50)
     region = models.CharField(choices=REGION_CHOICES, max_length=50)
     pdf_file = models.FileField(upload_to='resources/pdfs/', null=True, blank=True)
     sub_items_count = models.IntegerField(default=0)
     updated_at = models.DateField(auto_now=True)
-    link = models.URLField(blank=True, null=True)   
+    link = models.URLField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug and self.title:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            count = 1
+            while Resource.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{count}"
+                count += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
 class SubItem(models.Model):
     resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name="subitems")
-
     title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=255, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        indexes = [models.Index(fields=['slug'])]
+
+    def save(self, *args, **kwargs):
+        if not self.slug and self.title and self.resource_id:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            count = 1
+            while SubItem.objects.filter(resource=self.resource, slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{count}"
+                count += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
-    
+
 class File(models.Model):
     TYPE_CHOICES = [
         ("PDF", "PDF"),
@@ -66,6 +93,18 @@ class File(models.Model):
 
     def __str__(self):
         return self.title   
+
+class Question(models.Model):
+    subitem = models.ForeignKey(SubItem, on_delete=models.CASCADE, related_name="questions")
+    question_text = models.TextField()
+    option_a = models.CharField(max_length=255)
+    option_b = models.CharField(max_length=255)
+    option_c = models.CharField(max_length=255)
+    option_d = models.CharField(max_length=255)
+    correct_answer = models.CharField(max_length=1, choices=[('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D')])
+
+    def __str__(self):
+        return self.question_text[:50]
     
 class Calculator(models.Model):
     TYPE_CHOICES = [

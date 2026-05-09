@@ -5,12 +5,14 @@ import { useMemo, useState } from 'react'
 
 export type ResourceItem = {
   id: number
+  slug: string
   title: string
   description: string
   category: string
   region: string
   updated_at: string
   sub_items_count?: number
+  subitems?: { id: number; slug?: string; title: string }[]
 }
 
 const categoryLabels: Record<string, string> = {
@@ -29,6 +31,17 @@ const regionLabels: Record<string, string> = {
   other: 'Other Regions',
 }
 
+const categoryStyles: Record<
+  string,
+  { label: string; color: string; icon: string }
+> = {
+  codes: { label: 'Codes', color: 'bg-sky-500 text-slate-950', icon: '📘' },
+  district_rates: { label: 'District Rates', color: 'bg-orange-500 text-slate-950', icon: '🏷️' },
+  rules: { label: 'Rules & Regulations', color: 'bg-fuchsia-500 text-slate-950', icon: '📜' },
+  notes: { label: 'Notes', color: 'bg-amber-500 text-slate-950', icon: '📝' },
+  blogs: { label: 'Blogs', color: 'bg-pink-500 text-slate-950', icon: '📰' },
+}
+
 const sortOptions = [
   { value: 'newest', label: 'Newest' },
   { value: 'oldest', label: 'Oldest' },
@@ -41,6 +54,7 @@ interface Props {
   title?: string
   description?: string
   hideCategoryPills?: boolean
+  hideHeader?: boolean
 }
 
 export default function ResourceExplorer({
@@ -48,19 +62,46 @@ export default function ResourceExplorer({
   title = 'Engineering Resources',
   description = 'Access comprehensive civil engineering resources including codes, standards, rates, and industry guidelines from around the world.',
   hideCategoryPills = false,
+  hideHeader = false,
 }: Props) {
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedRegion, setSelectedRegion] = useState('all')
   const [sort, setSort] = useState('newest')
 
-  const categories = useMemo(() => {
-    return Array.from(new Set(initialResources.map((item) => item.category)))
+  const categories = useMemo(() => ['codes', 'district_rates', 'rules', 'notes', 'blogs'], [])
+
+  const regions = useMemo(() => ['nepal', 'india', 'us', 'europe', 'other'], [])
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      codes: 0,
+      district_rates: 0,
+      rules: 0,
+      notes: 0,
+      blogs: 0,
+    }
+    initialResources.forEach((item) => {
+      counts[item.category] = (counts[item.category] || 0) + 1
+    })
+    return counts
   }, [initialResources])
 
-  const regions = useMemo(() => {
-    return Array.from(new Set(initialResources.map((item) => item.region)))
+  const regionCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      nepal: 0,
+      india: 0,
+      us: 0,
+      europe: 0,
+      other: 0,
+    }
+    initialResources.forEach((item) => {
+      counts[item.region] = (counts[item.region] || 0) + 1
+    })
+    return counts
   }, [initialResources])
+
+  const stripHtml = (text: string) => text.replace(/<[^>]+>/g, '').trim()
 
   const filtered = useMemo(() => {
     return [...initialResources]
@@ -86,49 +127,57 @@ export default function ResourceExplorer({
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="text-center mb-10">
-        <p className="text-sm uppercase tracking-[0.3em] text-sky-400">Engineering Resources</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-100">{title}</h1>
-        <p className="mt-4 max-w-2xl mx-auto text-slate-400">{description}</p>
-      </div>
+      {!hideHeader && (
+        <div className="text-center mb-10">
+          <h1 className="text-5xl sm:text-6xl font-semibold tracking-tight text-slate-100">
+            {title}
+          </h1>
+          <p className="mt-5 text-base sm:text-lg text-slate-300 max-w-3xl mx-auto leading-8">
+            {description}
+          </p>
+        </div>
+      )}
 
-      <div className="grid gap-4 sm:grid-cols-[1fr_auto] items-center mb-8">
+      <div className="space-y-4 mb-6">
         <div className="relative">
           <label htmlFor="resource-search" className="sr-only">Search resources</label>
           <input
             id="resource-search"
-            className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
-            placeholder="Search resources, codes, blogs, notes..."
+            className="w-full rounded-3xl border border-slate-800 bg-slate-900 px-5 py-4 text-slate-100 placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+            placeholder="Search everything: NBC 105, Kathmandu rates, IS 456, ACI 318..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="flex gap-3 items-center justify-end">
-          <label htmlFor="resource-sort" className="text-sm text-slate-400">Sort by</label>
-          <select
-            id="resource-sort"
-            className="rounded-2xl border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-          >
-            {sortOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <label htmlFor="resource-sort" className="text-sm text-slate-400">Sort by</label>
+            <select
+              id="resource-sort"
+              className="rounded-2xl border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+            >
+              {sortOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="text-sm text-slate-400">{filtered.length} resources found</div>
         </div>
       </div>
 
-      <div className="space-y-2 mb-8">
+      <div className="space-y-4 mb-8">
         {!hideCategoryPills && (
           <div className="flex flex-wrap gap-2">
             <button
               className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedCategory === 'all' ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
               onClick={() => setSelectedCategory('all')}
             >
-              All Categories
+              All {initialResources.length}
             </button>
             {categories.map((category) => (
               <button
@@ -136,7 +185,10 @@ export default function ResourceExplorer({
                 className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedCategory === category ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
                 onClick={() => setSelectedCategory(category)}
               >
-                {categoryLabels[category] ?? category}
+                <span>{categoryLabels[category] ?? category}</span>
+                <span className="ml-2 inline-flex items-center rounded-full bg-slate-950 px-2 py-0.5 text-[0.7rem] font-semibold text-slate-400">
+                  {categoryCounts[category]}
+                </span>
               </button>
             ))}
           </div>
@@ -147,7 +199,7 @@ export default function ResourceExplorer({
             className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedRegion === 'all' ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
             onClick={() => setSelectedRegion('all')}
           >
-            All Regions
+            All {initialResources.length}
           </button>
           {regions.map((region) => (
             <button
@@ -155,43 +207,71 @@ export default function ResourceExplorer({
               className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedRegion === region ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
               onClick={() => setSelectedRegion(region)}
             >
-              {regionLabels[region] ?? region}
+              <span>{regionLabels[region] ?? region}</span>
+              <span className="ml-2 inline-flex items-center rounded-full bg-slate-950 px-2 py-0.5 text-[0.7rem] font-semibold text-slate-400">
+                {regionCounts[region]}
+              </span>
             </button>
           ))}
         </div>
       </div>
-
       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {filtered.map((resource) => (
-          <article
-            key={resource.id}
-            className="group rounded-3xl border border-slate-800 bg-slate-950/80 p-6 transition hover:border-sky-500/40 hover:shadow-[0_0_0_1px_rgba(56,189,248,0.2)]"
-          >
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <span className="rounded-full bg-slate-800 px-3 py-1 text-[0.78rem] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                {categoryLabels[resource.category] ?? resource.category}
-              </span>
-              <span className="rounded-full bg-slate-800 px-3 py-1 text-[0.78rem] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                {regionLabels[resource.region] ?? resource.region}
-              </span>
-            </div>
+        {filtered.map((resource) => {
+          const categoryStyle = categoryStyles[resource.category] ?? {
+            label: categoryLabels[resource.category] ?? resource.category,
+            color: 'bg-slate-700 text-white',
+            icon: '📁',
+          }
+          const itemCount = resource.sub_items_count || resource.subitems?.length || 0
+          const updatedDate = new Date(resource.updated_at).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })
 
-            <h2 className="text-xl font-semibold text-slate-100 mb-3">{resource.title}</h2>
-            <p className="text-slate-400 line-clamp-3 mb-6">{resource.description}</p>
+          return (
+            <Link
+              key={resource.id}
+              href={`/resources/${resource.slug}`}
+              className="group block rounded-3xl border border-slate-800 bg-slate-950/95 p-6 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.8)] transition duration-300 hover:-translate-y-1 hover:border-sky-500/40 hover:shadow-[0_25px_75px_-35px_rgba(56,189,248,0.35)]"
+            >
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className={`grid h-12 w-12 place-items-center rounded-2xl ${categoryStyle.color}`}>
+                    <span className="text-lg">{categoryStyle.icon}</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-full bg-slate-900/90 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-300">
+                        {categoryStyle.label}
+                      </span>
+                      <span className="rounded-full bg-slate-900/90 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-300">
+                        {regionLabels[resource.region] ?? resource.region}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900 text-slate-400 transition group-hover:text-white">
+                  <span>★</span>
+                </div>
+              </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-slate-500">
-                {resource.sub_items_count ? `${resource.sub_items_count} items` : 'Resource'}
+              <h2 className="text-2xl font-semibold text-slate-100 leading-tight mb-3">
+                {resource.title}
+              </h2>
+              <p className="text-slate-400 line-clamp-3 mb-6">
+                {stripHtml(resource.description)}
               </p>
-              <Link
-                href={`/resources/${resource.category}/${resource.id}`}
-                className="inline-flex items-center rounded-full bg-sky-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-sky-400"
-              >
-                View details
-              </Link>
-            </div>
-          </article>
-        ))}
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1 text-sm text-slate-400">
+                  <p className="text-slate-300">{itemCount ? `${itemCount} sub-items` : 'Resource'}</p>
+                  <p>{`Updated ${updatedDate}`}</p>
+                </div>
+              </div>
+            </Link>
+          )
+        })}
       </div>
 
       {filtered.length === 0 && (

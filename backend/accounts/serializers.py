@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Converter, File, Resource, SubItem, User, Calculator
+from .models import Converter, File, Question, Resource, SubItem, User, Calculator
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -28,8 +28,15 @@ class FileSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class QuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = '__all__'
+
+
 class SubItemSerializer(serializers.ModelSerializer):
     files = FileSerializer(many=True, read_only=True)
+    questions = QuestionSerializer(many=True, read_only=True)
 
     class Meta:
         model = SubItem

@@ -219,3 +219,15 @@ class ResourceDetailView(APIView):
             return Response(serializer.data)
         except Resource.DoesNotExist:
             return Response({"error": "Not found"}, status=404)
+
+class ResourceByIdView(APIView):
+    def get(self, request, id):
+        resource = get_object_or_404(Resource, id=id)
+        serializer = ResourceSerializer(resource)
+        return Response(serializer.data)
+
+class ResourceSlugView(APIView):
+    def get(self, request, slug):
+        resource = get_object_or_404(Resource, slug=slug)
+        serializer = ResourceSerializer(resource)
+        return Response(serializer.data)
