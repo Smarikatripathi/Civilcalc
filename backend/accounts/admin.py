@@ -10,7 +10,7 @@ from .models import (
     File,
     Question,
     Resource,
-    SubItem,
+    Section,
     User,
 )
 
@@ -18,7 +18,7 @@ admin.site.register(User, UserAdmin)
 
 
 class SectionInline(admin.TabularInline):
-    model = SubItem
+    model = Section
     extra = 1
     fields = ('title', 'slug', 'description', 'icon', 'image', 'order')
     prepopulated_fields = {'slug': ('title',)}
@@ -75,8 +75,8 @@ class QuestionInline(admin.TabularInline):
     )
 
 
-@admin.register(SubItem)
-class SubItemAdmin(admin.ModelAdmin):
+@admin.register(Section)
+class SectionAdmin(admin.ModelAdmin):
     list_display = ('title', 'resource', 'order')
     list_filter = ('resource',)
     search_fields = ('title', 'description', 'resource__title')
@@ -123,15 +123,15 @@ class ContentBlockAdmin(admin.ModelAdmin):
 
 @admin.register(File)
 class FileAdmin(admin.ModelAdmin):
-    list_display = ('title', 'type', 'subitem', 'order')
-    list_filter = ('type', 'subitem__resource')
+    list_display = ('title', 'type', 'section', 'order')
+    list_filter = ('type', 'section__resource')
     search_fields = ('title',)
 
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('question_text', 'subitem', 'chapter', 'correct_answer', 'order')
-    list_filter = ('subitem__resource', 'subitem', 'chapter')
+    list_display = ('question_text', 'section', 'chapter', 'correct_answer', 'order')
+    list_filter = ('section__resource', 'section', 'chapter')
     search_fields = ('question_text',)
 
 admin.site.register(Calculator)

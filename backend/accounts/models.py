@@ -55,6 +55,9 @@ class Resource(models.Model):
     updated_at = models.DateField(auto_now=True)
     link = models.URLField(blank=True, null=True)
 
+    def __str__(self):
+        return self.title
+
     def save(self, *args, **kwargs):
         if not self.slug and self.title:
             base_slug = slugify(self.title)
@@ -66,7 +69,7 @@ class Resource(models.Model):
             self.slug = slug
         super().save(*args, **kwargs)
 
-class SubItem(models.Model):
+class Section(models.Model):
     resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name="subitems")
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=255, blank=True, null=True)
@@ -84,7 +87,7 @@ class SubItem(models.Model):
             base_slug = slugify(self.title)
             slug = base_slug
             count = 1
-            while SubItem.objects.filter(resource=self.resource, slug=slug).exclude(pk=self.pk).exists():
+            while Section.objects.filter(resource=self.resource, slug=slug).exclude(pk=self.pk).exists():
                 slug = f"{base_slug}-{count}"
                 count += 1
             self.slug = slug
@@ -97,7 +100,7 @@ class SubItem(models.Model):
 class Chapter(models.Model):
     resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name="chapters")
     section = models.ForeignKey(
-        SubItem,
+        Section,
         on_delete=models.CASCADE,
         related_name="chapters",
         blank=True,
@@ -155,7 +158,7 @@ class ContentBlock(models.Model):
 
     resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name="content_blocks")
     section = models.ForeignKey(
-        SubItem,
+        Section,
         on_delete=models.CASCADE,
         related_name="content_blocks",
         blank=True,
@@ -198,7 +201,7 @@ class File(models.Model):
         ("NOTE", "Note"),
     ]
 
-    subitem = models.ForeignKey(SubItem, on_delete=models.CASCADE, related_name="files")
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="files")
 
     title = models.CharField(max_length=200)
     file = models.FileField(upload_to='resources/files/', blank=True, null=True)
@@ -213,8 +216,8 @@ class File(models.Model):
         return self.title   
 
 class Question(models.Model):
-    subitem = models.ForeignKey(
-        SubItem,
+    section = models.ForeignKey(
+        Section,
         on_delete=models.CASCADE,
         related_name="questions",
         blank=True,

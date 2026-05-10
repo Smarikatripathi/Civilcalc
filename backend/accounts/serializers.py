@@ -7,7 +7,7 @@ from .models import (
     File,
     Question,
     Resource,
-    SubItem,
+    Section,
     User,
 )
 
@@ -84,7 +84,7 @@ class SubItemSerializer(serializers.ModelSerializer):
     content_blocks = ContentBlockSerializer(many=True, read_only=True)
 
     class Meta:
-        model = SubItem
+        model = Section
         fields = '__all__'
 
 
