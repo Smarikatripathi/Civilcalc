@@ -83,6 +83,20 @@ html, body {
   color: rgb(56 189 248);
 }
 
+.resource-content-study table {
+  border-color: rgb(51 65 85);
+  background: rgb(30 41 59);
+}
+
+.resource-content-study th {
+  background: rgb(36 69 155);
+  color: white;
+}
+
+.resource-content-study td {
+  background: rgb(30 41 59);
+  color: white;
+}
 
 
 
