@@ -144,6 +144,8 @@ class Chapter(models.Model):
 class ContentBlock(models.Model):
     BLOCK_TYPE_CHOICES = [
         ("note", "Note"),
+        ("summary", "Summary"),
+        ("table", "Table"),
         ("formula", "Formula"),
         ("pdf", "PDF"),
         ("embed", "Embedded material"),

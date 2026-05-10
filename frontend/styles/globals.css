@@ -14,6 +14,74 @@ html, body {
   outline-color: theme('colors.accent.DEFAULT');
 }
 
+.resource-content h2,
+.resource-content h3,
+.resource-content h4 {
+  color: rgb(241 245 249);
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.resource-content p,
+.resource-content ul,
+.resource-content ol {
+  margin-top: 0.75rem;
+}
+
+.resource-content ul,
+.resource-content ol {
+  padding-left: 1.25rem;
+}
+
+.resource-content ul {
+  list-style: disc;
+}
+
+.resource-content ol {
+  list-style: decimal;
+}
+
+.resource-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(30 41 59);
+}
+
+.resource-content th,
+.resource-content td {
+  border: 1px solid rgb(30 41 59);
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.resource-content th {
+  background: rgb(15 23 42);
+  color: rgb(226 232 240);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.resource-content td {
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.resource-content code {
+  border-radius: 0.4rem;
+  background: rgb(15 23 42);
+  color: rgb(125 211 252);
+  padding: 0.1rem 0.35rem;
+}
+
+.resource-content a {
+  color: rgb(56 189 248);
+}
 
 
 
