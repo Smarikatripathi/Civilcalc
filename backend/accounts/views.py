@@ -176,8 +176,12 @@ def reset_password(request, uidb64, token):
 
 @api_view(['GET'])
 def get_resources(request):
-    data = Resource.objects.all()
-    serializer = ResourceSerializer(data, many=True)
+    data = Resource.objects.prefetch_related(
+        "subitems",
+        "chapters",
+        "content_blocks",
+    ).all()
+    serializer = ResourceSerializer(data, many=True, context={"request": request})
     return Response(serializer.data)
 
 
@@ -197,16 +201,24 @@ def get_converters(request):
 # GET all categories
 class ResourceListView(APIView):
     def get(self, request):
-        resources = Resource.objects.all()
-        serializer = ResourceSerializer(resources, many=True)
+        resources = Resource.objects.prefetch_related(
+            "subitems",
+            "chapters",
+            "content_blocks",
+        ).all()
+        serializer = ResourceSerializer(resources, many=True, context={"request": request})
         return Response(serializer.data)
 
 
 # GET by category
 class ResourceByCategoryView(APIView):
     def get(self, request, category):
-        resources = Resource.objects.filter(category=category)
-        serializer = ResourceSerializer(resources, many=True)
+        resources = Resource.objects.prefetch_related(
+            "subitems",
+            "chapters",
+            "content_blocks",
+        ).filter(category=category)
+        serializer = ResourceSerializer(resources, many=True, context={"request": request})
         return Response(serializer.data)
 
 
@@ -215,19 +227,43 @@ class ResourceDetailView(APIView):
     def get(self, request, category, sub):
         try:
             resource = Resource.objects.get(category=category, id=sub)
-            serializer = ResourceSerializer(resource)
+            serializer = ResourceSerializer(resource, context={"request": request})
             return Response(serializer.data)
         except Resource.DoesNotExist:
             return Response({"error": "Not found"}, status=404)
 
 class ResourceByIdView(APIView):
     def get(self, request, id):
-        resource = get_object_or_404(Resource, id=id)
-        serializer = ResourceSerializer(resource)
+        resource = get_object_or_404(
+            Resource.objects.prefetch_related(
+                "subitems__files",
+                "subitems__questions",
+                "subitems__chapters__content_blocks",
+                "subitems__chapters__questions",
+                "subitems__content_blocks",
+                "chapters__content_blocks",
+                "chapters__questions",
+                "content_blocks",
+            ),
+            id=id,
+        )
+        serializer = ResourceSerializer(resource, context={"request": request})
         return Response(serializer.data)
 
 class ResourceSlugView(APIView):
     def get(self, request, slug):
-        resource = get_object_or_404(Resource, slug=slug)
-        serializer = ResourceSerializer(resource)
+        resource = get_object_or_404(
+            Resource.objects.prefetch_related(
+                "subitems__files",
+                "subitems__questions",
+                "subitems__chapters__content_blocks",
+                "subitems__chapters__questions",
+                "subitems__content_blocks",
+                "chapters__content_blocks",
+                "chapters__questions",
+                "content_blocks",
+            ),
+            slug=slug,
+        )
+        serializer = ResourceSerializer(resource, context={"request": request})
         return Response(serializer.data)

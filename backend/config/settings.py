@@ -90,10 +90,18 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+LOCAL_SQLITE_PATH = Path(
+    os.environ.get(
+        'SQLITE_DB_PATH',
+        Path(os.environ.get('LOCALAPPDATA', BASE_DIR)) / 'CivilCalculation' / 'db.sqlite3',
+    )
+)
+DEFAULT_SQLITE_PATH = LOCAL_SQLITE_PATH if LOCAL_SQLITE_PATH.exists() else BASE_DIR / 'db.sqlite3'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DEFAULT_SQLITE_PATH,
     }
 }
 

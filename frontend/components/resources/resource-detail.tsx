@@ -1,10 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
-
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:8000'
+import { useMemo, useState } from 'react'
+import { BACKEND_URL } from '../../lib/resources-api'
 
 const categoryLabels: Record<string, string> = {
   codes: 'Codes',
@@ -22,159 +20,100 @@ const regionLabels: Record<string, string> = {
   other: 'Other Regions',
 }
 
-function getFileUrl(url?: string) {
+const blockLabels: Record<string, string> = {
+  note: 'Notes',
+  formula: 'Important Formulas',
+  pdf: 'PDF',
+  embed: 'Study Material',
+  practice: 'Practice Questions',
+  video: 'Video',
+}
+
+function getFileUrl(url?: string | null) {
   if (!url) return null
   if (url.startsWith('http')) return url
   return `${BACKEND_URL}${url}`
 }
 
+function stripHtml(text?: string | null) {
+  return text?.replace(/<[^>]+>/g, '').trim() ?? ''
+}
+
+function getSectionDownloadUrl(section: any) {
+  const legacyPdf = section.files?.find((file: any) => file.type === 'PDF')
+  if (legacyPdf) {
+    return getFileUrl(legacyPdf.file_url ?? legacyPdf.url)
+  }
+
+  const pdfBlock = section.content_blocks?.find(
+    (block: any) => block.block_type === 'pdf'
+  )
+  if (pdfBlock) {
+    return getFileUrl(pdfBlock.file_url ?? pdfBlock.external_url)
+  }
+
+  const chapterPdfBlock = section.chapters
+    ?.flatMap((chapter: any) => chapter.content_blocks ?? [])
+    .find((block: any) => block.block_type === 'pdf')
+
+  return getFileUrl(chapterPdfBlock?.file_url ?? chapterPdfBlock?.external_url)
+}
+
 export default function ResourceDetailContent({
   resource,
   selectedSubitemSlug,
+  selectedChapterSlug,
 }: {
   resource: any
   selectedSubitemSlug?: string | null
+  selectedChapterSlug?: string | null
 }) {
-  const [selectedSubitem, setSelectedSubitem] = useState(
-    selectedSubitemSlug
-      ? resource.subitems?.find((item: any) => item.slug === selectedSubitemSlug)
-      : resource.subitems?.[0] || null
-  )
+  const sections = resource.subitems ?? []
+  const selectedSection = selectedSubitemSlug
+    ? sections.find((item: any) => item.slug === selectedSubitemSlug)
+    : null
 
-  const pdfUrl = getFileUrl(resource.pdf_file)
+  const visibleChapters = useMemo(() => {
+    if (selectedSection) return selectedSection.chapters ?? []
+    return (resource.chapters ?? []).filter((chapter: any) => !chapter.section)
+  }, [resource.chapters, selectedSection])
+
+  const selectedChapter = selectedChapterSlug
+    ? visibleChapters.find((chapter: any) => chapter.slug === selectedChapterSlug)
+    : null
+
+  const showSectionIndex =
+    resource.content_mode === 'sections' && sections.length > 0 && !selectedSection
+
+  const pdfUrl = getFileUrl(resource.pdf_url ?? resource.pdf_file)
+  const thumbnailUrl = getFileUrl(resource.thumbnail_url ?? resource.thumbnail)
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="max-w-6xl mx-auto px-6 py-6">
         <Link href="/resources" className="text-sky-400 hover:text-sky-300">
-          ← Back to Resources
+          Back to Resources
         </Link>
       </div>
 
       <div className="max-w-6xl mx-auto px-6 pb-16 grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/40 p-8">
-            <p className="text-xs tracking-[0.35em] uppercase text-sky-400">
-              {categoryLabels[resource.category] ?? resource.category}
-            </p>
+        <main className="lg:col-span-2 space-y-6">
+          <ResourceHeader resource={resource} thumbnailUrl={thumbnailUrl} />
 
-            <h1 className="mt-3 text-4xl font-bold">{resource.title}</h1>
-
-            <div
-              className="mt-5 text-slate-300 leading-7"
-              dangerouslySetInnerHTML={{ __html: resource.description || '' }}
+          {showSectionIndex ? (
+            <SectionIndex resource={resource} sections={sections} />
+          ) : (
+            <LearningView
+              resource={resource}
+              selectedSection={selectedSection}
+              selectedChapter={selectedChapter}
+              visibleChapters={visibleChapters}
             />
-          </div>
-
-          {/* Sections Navigation */}
-          {resource.subitems?.length > 0 && (
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/40 p-6">
-              <h2 className="text-lg font-semibold text-slate-100 mb-4">Sections</h2>
-              <div className="flex flex-wrap gap-2">
-                {resource.subitems.map((subitem: any) => (
-                  <button
-                    key={subitem.id}
-                    onClick={() => setSelectedSubitem(subitem)}
-                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                      selectedSubitem?.id === subitem.id
-                        ? 'bg-sky-500 text-slate-950'
-                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                    }`}
-                  >
-                    {subitem.title}
-                  </button>
-                ))}
-              </div>
-            </div>
           )}
+        </main>
 
-          {/* Selected Section Content */}
-          {selectedSubitem && (
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/40 p-6">
-              <h2 className="text-2xl font-semibold text-slate-100 mb-4">
-                {selectedSubitem.title}
-              </h2>
-              {selectedSubitem.description && (
-                <div className="text-slate-400 mb-6 whitespace-pre-line">
-                  {selectedSubitem.description}
-                </div>
-              )}
-
-              {/* PDFs */}
-              {selectedSubitem.files?.filter((file: any) => file.type === 'PDF').length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-slate-100 mb-3">📄 PDF Files</h3>
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {selectedSubitem.files
-                      .filter((file: any) => file.type === 'PDF')
-                      .map((file: any) => (
-                        <div key={file.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-                          <p className="text-xs text-slate-500 uppercase mb-2">PDF</p>
-                          <p className="font-medium mb-3">{file.title}</p>
-                          <div className="flex gap-2">
-                            <a
-                              href={getFileUrl(file.url) ?? '#'}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="flex-1 text-center bg-sky-500 text-black font-semibold py-2 px-4 rounded-lg text-sm hover:bg-sky-400 transition"
-                            >
-                              View PDF
-                            </a>
-                            <a
-                              href={getFileUrl(file.url) ?? '#'}
-                              download
-                              className="flex-1 text-center border border-slate-600 text-slate-300 font-semibold py-2 px-4 rounded-lg text-sm hover:bg-slate-800 transition"
-                            >
-                              Download
-                            </a>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Study Content */}
-              {selectedSubitem.files?.filter((file: any) => file.type === 'NOTE').length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-slate-100 mb-3">📝 Study Content</h3>
-                  <div className="space-y-4">
-                    {selectedSubitem.files
-                      .filter((file: any) => file.type === 'NOTE')
-                      .map((file: any) => (
-                        <div key={file.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-                          <h4 className="font-medium text-slate-100 mb-2">{file.title}</h4>
-                          <a
-                            href={getFileUrl(file.url) ?? '#'}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-sky-400 hover:text-sky-300 text-sm"
-                          >
-                            View Content →
-                          </a>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              {/* MCQ Questions */}
-              {selectedSubitem.questions?.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-slate-100 mb-3">❓ MCQ Questions</h3>
-                  <div className="space-y-4">
-                    {selectedSubitem.questions.map((question: any) => (
-                      <MCQQuestion key={question.id} question={question} />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          <div className="sticky top-6 rounded-3xl border border-slate-800 bg-slate-900/40 p-6">
+        <aside className="space-y-4">
+          <div className="sticky top-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
             <p className="text-sm text-slate-400">Region</p>
             <p className="font-semibold">
               {regionLabels[resource.region] ?? resource.region}
@@ -182,6 +121,27 @@ export default function ResourceDetailContent({
 
             <p className="mt-4 text-sm text-slate-400">Updated</p>
             <p>{new Date(resource.updated_at).toLocaleDateString()}</p>
+
+            {resource.content_mode === 'sections' && sections.length > 0 && (
+              <>
+                <p className="mt-6 text-sm text-slate-400">Sections</p>
+                <div className="mt-3 space-y-2">
+                  {sections.map((section: any) => (
+                    <Link
+                      key={section.id}
+                      href={`/resources/${resource.slug}/${section.slug}`}
+                      className={`block rounded-xl px-3 py-2 text-sm transition ${
+                        selectedSection?.id === section.id
+                          ? 'bg-sky-500 text-slate-950'
+                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      }`}
+                    >
+                      {section.title}
+                    </Link>
+                  ))}
+                </div>
+              </>
+            )}
 
             {pdfUrl && (
               <a
@@ -194,8 +154,319 @@ export default function ResourceDetailContent({
               </a>
             )}
           </div>
-        </div>
+        </aside>
       </div>
+    </div>
+  )
+}
+
+function ResourceHeader({
+  resource,
+  thumbnailUrl,
+}: {
+  resource: any
+  thumbnailUrl: string | null
+}) {
+  return (
+    <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 sm:p-8">
+      {thumbnailUrl && (
+        <img
+          src={thumbnailUrl}
+          alt={resource.title}
+          className="mb-6 aspect-video w-full rounded-xl object-cover"
+        />
+      )}
+
+      <p className="text-xs tracking-[0.3em] uppercase text-sky-400">
+        {categoryLabels[resource.category] ?? resource.category}
+      </p>
+
+      <h1 className="mt-3 text-3xl sm:text-4xl font-bold">{resource.title}</h1>
+
+      <div
+        className="mt-5 text-slate-300 leading-7"
+        dangerouslySetInnerHTML={{ __html: resource.description || '' }}
+      />
+    </section>
+  )
+}
+
+function SectionIndex({ resource, sections }: { resource: any; sections: any[] }) {
+  return (
+    <section className="grid gap-4 sm:grid-cols-2">
+      {sections.map((section) => {
+        const sectionHref = `/resources/${resource.slug}/${section.slug}`
+        const downloadUrl = getSectionDownloadUrl(section)
+
+        return (
+          <div
+            key={section.id}
+            className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5"
+          >
+            <div className="flex items-start gap-3">
+              {section.icon && (
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-slate-800 text-sm">
+                  {section.icon}
+                </span>
+              )}
+              <div className="min-w-0">
+                <h2 className="text-xl font-semibold text-slate-100">
+                  {section.title}
+                </h2>
+                <p className="mt-2 text-sm text-slate-400">
+                  Opens section page
+                </p>
+                {section.description && (
+                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500">
+                    {stripHtml(section.description)}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Link
+                href={sectionHref as any}
+                className="rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-sky-400"
+              >
+                Open
+              </Link>
+              {downloadUrl ? (
+                <a
+                  href={downloadUrl}
+                  download
+                  className="rounded-xl border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800"
+                >
+                  Download
+                </a>
+              ) : (
+                <span className="rounded-xl border border-slate-800 px-4 py-2 text-sm font-semibold text-slate-600">
+                  Download
+                </span>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </section>
+  )
+}
+
+function LearningView({
+  resource,
+  selectedSection,
+  selectedChapter,
+  visibleChapters,
+}: {
+  resource: any
+  selectedSection: any
+  selectedChapter: any
+  visibleChapters: any[]
+}) {
+  const rootBlocks = selectedSection
+    ? selectedSection.content_blocks ?? []
+    : resource.content_blocks ?? []
+  const legacyFiles = selectedSection?.files ?? []
+  const legacyQuestions = selectedSection?.questions ?? []
+  const activeChapters = selectedChapter ? [selectedChapter] : visibleChapters
+
+  return (
+    <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+      {selectedSection && (
+        <div className="mb-6 border-b border-slate-800 pb-6">
+          <p className="text-xs tracking-[0.28em] uppercase text-sky-400">Section</p>
+          <h2 className="mt-2 text-2xl font-semibold">{selectedSection.title}</h2>
+          {selectedSection.description && (
+            <p className="mt-3 whitespace-pre-line text-slate-400">
+              {selectedSection.description}
+            </p>
+          )}
+        </div>
+      )}
+
+      {visibleChapters.length > 0 && (
+        <ChapterNavigation
+          resource={resource}
+          section={selectedSection}
+          chapters={visibleChapters}
+          selectedChapter={selectedChapter}
+        />
+      )}
+
+      {!selectedChapter && (
+        <>
+          <ContentBlocks blocks={rootBlocks} />
+          <LegacyFiles files={legacyFiles} />
+          <Questions questions={legacyQuestions} />
+        </>
+      )}
+
+      {activeChapters.map((chapter) => (
+        <ChapterContent key={chapter.id} chapter={chapter} />
+      ))}
+
+      {!rootBlocks.length &&
+        !legacyFiles.length &&
+        !legacyQuestions.length &&
+        !activeChapters.length && (
+          <p className="text-slate-400">
+            Content for this resource has not been added from the admin panel yet.
+          </p>
+        )}
+    </section>
+  )
+}
+
+function ChapterNavigation({
+  resource,
+  section,
+  chapters,
+  selectedChapter,
+}: {
+  resource: any
+  section: any
+  chapters: any[]
+  selectedChapter: any
+}) {
+  return (
+    <div className="mb-6">
+      <h3 className="mb-3 text-lg font-semibold">Chapters</h3>
+      <div className="flex flex-wrap gap-2">
+        {chapters.map((chapter) => {
+          const href = section
+            ? `/resources/${resource.slug}/${section.slug}/${chapter.slug}`
+            : `/resources/${resource.slug}`
+
+          return (
+            <Link
+              key={chapter.id}
+              href={href as any}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                selectedChapter?.id === chapter.id
+                  ? 'bg-sky-500 text-slate-950'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              {chapter.title}
+            </Link>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function ChapterContent({ chapter }: { chapter: any }) {
+  return (
+    <article className="mt-6 border-t border-slate-800 pt-6 first:mt-0 first:border-t-0 first:pt-0">
+      <h3 className="text-2xl font-semibold">{chapter.title}</h3>
+      {chapter.description && (
+        <p className="mt-3 whitespace-pre-line text-slate-400">
+          {chapter.description}
+        </p>
+      )}
+      <ContentBlocks blocks={chapter.content_blocks ?? []} />
+      <Questions questions={chapter.questions ?? []} />
+    </article>
+  )
+}
+
+function ContentBlocks({ blocks }: { blocks: any[] }) {
+  if (!blocks.length) return null
+
+  return (
+    <div className="mt-6 space-y-4">
+      {blocks.map((block) => {
+        const fileUrl = getFileUrl(block.file_url ?? block.external_url)
+
+        return (
+          <div
+            key={block.id}
+            className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-400">
+              {blockLabels[block.block_type] ?? block.block_type}
+            </p>
+            <h4 className="mt-2 text-lg font-semibold text-slate-100">
+              {block.title}
+            </h4>
+            {block.body && (
+              <div
+                className="mt-3 leading-7 text-slate-300"
+                dangerouslySetInnerHTML={{ __html: block.body }}
+              />
+            )}
+            {fileUrl && (
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-flex rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-sky-400"
+              >
+                Open
+              </a>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function LegacyFiles({ files }: { files: any[] }) {
+  if (!files.length) return null
+
+  return (
+    <div className="mt-6 space-y-4">
+      {files.map((file) => {
+        const fileUrl = getFileUrl(file.file_url ?? file.url)
+
+        return (
+          <div
+            key={file.id}
+            className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-400">
+              {file.type}
+            </p>
+            <h4 className="mt-2 text-lg font-semibold text-slate-100">
+              {file.title}
+            </h4>
+            {fileUrl && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-sky-400"
+                >
+                  View
+                </a>
+                <a
+                  href={fileUrl}
+                  download
+                  className="rounded-xl border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800"
+                >
+                  Download
+                </a>
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function Questions({ questions }: { questions: any[] }) {
+  if (!questions.length) return null
+
+  return (
+    <div className="mt-6 space-y-4">
+      <h3 className="text-lg font-semibold text-slate-100">MCQ Questions</h3>
+      {questions.map((question) => (
+        <MCQQuestion key={question.id} question={question} />
+      ))}
     </div>
   )
 }
@@ -213,36 +484,44 @@ function MCQQuestion({ question }: { question: any }) {
 
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-      <p className="font-medium text-slate-100 mb-4">{question.question_text}</p>
+      <p className="mb-4 font-medium text-slate-100">{question.question_text}</p>
       <div className="space-y-2">
         {options.map((option) => (
           <button
             key={option.key}
             onClick={() => setSelectedAnswer(option.key)}
-            className={`w-full text-left p-3 rounded-lg border transition ${
+            className={`w-full rounded-lg border p-3 text-left transition ${
               selectedAnswer === option.key
                 ? 'border-sky-500 bg-sky-500/10 text-sky-300'
                 : 'border-slate-700 bg-slate-800/50 text-slate-300 hover:border-slate-600'
             }`}
           >
-            <span className="font-semibold mr-2">{option.key}.</span>
+            <span className="mr-2 font-semibold">{option.key}.</span>
             {option.value}
           </button>
         ))}
       </div>
+
       {selectedAnswer && (
         <button
           onClick={() => setShowAnswer(true)}
-          className="mt-4 w-full bg-slate-700 text-slate-300 py-2 px-4 rounded-lg hover:bg-slate-600 transition"
+          className="mt-4 w-full rounded-lg bg-slate-700 px-4 py-2 text-slate-300 transition hover:bg-slate-600"
         >
           Show Answer
         </button>
       )}
+
       {showAnswer && (
-        <div className="mt-4 p-3 rounded-lg bg-slate-800/50">
+        <div className="mt-4 rounded-lg bg-slate-800/50 p-3">
           <p className="text-sm text-slate-400">
-            Correct Answer: <span className="font-semibold text-green-400">{question.correct_answer}</span>
+            Correct Answer:{' '}
+            <span className="font-semibold text-green-400">
+              {question.correct_answer}
+            </span>
           </p>
+          {question.explanation && (
+            <p className="mt-2 text-sm text-slate-300">{question.explanation}</p>
+          )}
         </div>
       )}
     </div>

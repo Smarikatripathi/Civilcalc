@@ -18,6 +18,11 @@ class User(AbstractUser):
 # models.py
 
 class Resource(models.Model):
+    CONTENT_MODE_CHOICES = [
+        ("direct", "Direct content page"),
+        ("sections", "Open sections first"),
+    ]
+
     CATEGORY_CHOICES = [
         ("codes", "Codes"),
         ("district_rates", "District Rates"),
@@ -39,6 +44,12 @@ class Resource(models.Model):
     description = RichTextField()
     category = models.CharField(choices=CATEGORY_CHOICES, max_length=50)
     region = models.CharField(choices=REGION_CHOICES, max_length=50)
+    content_mode = models.CharField(
+        choices=CONTENT_MODE_CHOICES,
+        max_length=20,
+        default="sections",
+    )
+    thumbnail = models.ImageField(upload_to='resources/thumbnails/', null=True, blank=True)
     pdf_file = models.FileField(upload_to='resources/pdfs/', null=True, blank=True)
     sub_items_count = models.IntegerField(default=0)
     updated_at = models.DateField(auto_now=True)
@@ -60,9 +71,13 @@ class SubItem(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=255, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='resources/sections/', null=True, blank=True)
+    icon = models.CharField(max_length=80, blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
 
     class Meta:
         indexes = [models.Index(fields=['slug'])]
+        ordering = ['order', 'id']
 
     def save(self, *args, **kwargs):
         if not self.slug and self.title and self.resource_id:
@@ -78,6 +93,102 @@ class SubItem(models.Model):
     def __str__(self):
         return self.title
 
+
+class Chapter(models.Model):
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name="chapters")
+    section = models.ForeignKey(
+        SubItem,
+        on_delete=models.CASCADE,
+        related_name="chapters",
+        blank=True,
+        null=True,
+    )
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+        indexes = [
+            models.Index(fields=['slug']),
+            models.Index(fields=['resource', 'slug']),
+            models.Index(fields=['section', 'slug']),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.section_id and not self.resource_id:
+            self.resource = self.section.resource
+
+        if not self.slug and self.title and self.resource_id:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            count = 1
+            queryset = Chapter.objects.filter(resource=self.resource, slug=slug)
+            if self.section_id:
+                queryset = queryset.filter(section=self.section)
+            while queryset.exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{count}"
+                count += 1
+                queryset = Chapter.objects.filter(resource=self.resource, slug=slug)
+                if self.section_id:
+                    queryset = queryset.filter(section=self.section)
+            self.slug = slug
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
+class ContentBlock(models.Model):
+    BLOCK_TYPE_CHOICES = [
+        ("note", "Note"),
+        ("formula", "Formula"),
+        ("pdf", "PDF"),
+        ("embed", "Embedded material"),
+        ("practice", "Practice question"),
+        ("video", "Video"),
+    ]
+
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name="content_blocks")
+    section = models.ForeignKey(
+        SubItem,
+        on_delete=models.CASCADE,
+        related_name="content_blocks",
+        blank=True,
+        null=True,
+    )
+    chapter = models.ForeignKey(
+        Chapter,
+        on_delete=models.CASCADE,
+        related_name="content_blocks",
+        blank=True,
+        null=True,
+    )
+    block_type = models.CharField(max_length=20, choices=BLOCK_TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    body = RichTextField(blank=True, null=True)
+    file = models.FileField(upload_to='resources/content/', blank=True, null=True)
+    external_url = models.URLField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def save(self, *args, **kwargs):
+        if self.chapter_id:
+            self.resource = self.chapter.resource
+            if self.chapter.section_id and not self.section_id:
+                self.section = self.chapter.section
+        elif self.section_id and not self.resource_id:
+            self.resource = self.section.resource
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.get_block_type_display()}: {self.title}"
+
 class File(models.Model):
     TYPE_CHOICES = [
         ("PDF", "PDF"),
@@ -88,20 +199,43 @@ class File(models.Model):
     subitem = models.ForeignKey(SubItem, on_delete=models.CASCADE, related_name="files")
 
     title = models.CharField(max_length=200)
-    url = models.URLField()
+    file = models.FileField(upload_to='resources/files/', blank=True, null=True)
+    url = models.URLField(blank=True, null=True)
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
 
     def __str__(self):
         return self.title   
 
 class Question(models.Model):
-    subitem = models.ForeignKey(SubItem, on_delete=models.CASCADE, related_name="questions")
+    subitem = models.ForeignKey(
+        SubItem,
+        on_delete=models.CASCADE,
+        related_name="questions",
+        blank=True,
+        null=True,
+    )
+    chapter = models.ForeignKey(
+        Chapter,
+        on_delete=models.CASCADE,
+        related_name="questions",
+        blank=True,
+        null=True,
+    )
     question_text = models.TextField()
     option_a = models.CharField(max_length=255)
     option_b = models.CharField(max_length=255)
     option_c = models.CharField(max_length=255)
     option_d = models.CharField(max_length=255)
     correct_answer = models.CharField(max_length=1, choices=[('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D')])
+    explanation = models.TextField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
 
     def __str__(self):
         return self.question_text[:50]

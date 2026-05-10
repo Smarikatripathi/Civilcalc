@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { BACKEND_URL } from '../../lib/resources-api'
 
 export type ResourceItem = {
   id: number
@@ -11,6 +12,8 @@ export type ResourceItem = {
   category: string
   region: string
   updated_at: string
+  thumbnail_url?: string | null
+  thumbnail?: string | null
   sub_items_count?: number
   subitems?: { id: number; slug?: string; title: string }[]
 }
@@ -102,6 +105,11 @@ export default function ResourceExplorer({
   }, [initialResources])
 
   const stripHtml = (text: string) => text.replace(/<[^>]+>/g, '').trim()
+  const getFileUrl = (url?: string | null) => {
+    if (!url) return null
+    if (url.startsWith('http')) return url
+    return `${BACKEND_URL}${url}`
+  }
 
   const filtered = useMemo(() => {
     return [...initialResources]
@@ -223,6 +231,7 @@ export default function ResourceExplorer({
             icon: '📁',
           }
           const itemCount = resource.sub_items_count || resource.subitems?.length || 0
+          const thumbnailUrl = getFileUrl(resource.thumbnail_url ?? resource.thumbnail)
           const updatedDate = new Date(resource.updated_at).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -235,6 +244,14 @@ export default function ResourceExplorer({
               href={`/resources/${resource.slug}`}
               className="group block rounded-3xl border border-slate-800 bg-slate-950/95 p-6 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.8)] transition duration-300 hover:-translate-y-1 hover:border-sky-500/40 hover:shadow-[0_25px_75px_-35px_rgba(56,189,248,0.35)]"
             >
+              {thumbnailUrl && (
+                <img
+                  src={thumbnailUrl}
+                  alt={resource.title}
+                  className="mb-5 aspect-video w-full rounded-2xl object-cover"
+                />
+              )}
+
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
                   <div className={`grid h-12 w-12 place-items-center rounded-2xl ${categoryStyle.color}`}>
