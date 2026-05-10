@@ -19,7 +19,7 @@ export default async function ResourcesPage() {
   const resources = await getResources()
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 text-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-white">
       <section className="max-w-7xl mx-auto px-6 py-16">
         <ResourceExplorer initialResources={resources} />
       </section>

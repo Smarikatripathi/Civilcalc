@@ -106,7 +106,7 @@ export default function ResourceDetailContent({
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-white">
       <div className="max-w-6xl mx-auto px-6 py-6">
         <Link href="/resources" className="text-sky-400 hover:text-sky-300">
           Back to Resources
@@ -130,18 +130,18 @@ export default function ResourceDetailContent({
         </main>
 
         <aside className="space-y-4">
-          <div className="sticky top-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-            <p className="text-sm text-slate-400">Region</p>
+          <div className="sticky top-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Region</p>
             <p className="font-semibold">
               {regionLabels[resource.region] ?? resource.region}
             </p>
 
-            <p className="mt-4 text-sm text-slate-400">Updated</p>
+            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Updated</p>
             <p>{new Date(resource.updated_at).toLocaleDateString()}</p>
 
             {resource.content_mode === 'sections' && sections.length > 0 && (
               <>
-                <p className="mt-6 text-sm text-slate-400">Sections</p>
+                <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">Sections</p>
                 <div className="mt-3 space-y-2">
                   {sections.map((section: any) => (
                     <Link
@@ -150,7 +150,7 @@ export default function ResourceDetailContent({
                       className={`block rounded-xl px-3 py-2 text-sm transition ${
                         selectedSection?.id === section.id
                           ? 'bg-sky-500 text-slate-950'
-                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
                       }`}
                     >
                       {section.title}
@@ -185,7 +185,7 @@ function ResourceHeader({
   thumbnailUrl: string | null
 }) {
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 sm:p-8">
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40 sm:p-8">
       {thumbnailUrl && (
         <img
           src={thumbnailUrl}
@@ -194,14 +194,14 @@ function ResourceHeader({
         />
       )}
 
-      <p className="text-xs tracking-[0.3em] uppercase text-sky-400">
+      <p className="text-xs tracking-[0.3em] uppercase text-sky-500 dark:text-sky-400">
         {categoryLabels[resource.category] ?? resource.category}
       </p>
 
-      <h1 className="mt-3 text-3xl sm:text-4xl font-bold">{resource.title}</h1>
+      <h1 className="mt-3 text-3xl sm:text-4xl font-bold text-slate-950 dark:text-white">{resource.title}</h1>
 
       <div
-        className="mt-5 text-slate-300 leading-7"
+        className="mt-5 text-slate-700 leading-7 dark:text-slate-300"
         dangerouslySetInnerHTML={{ __html: resource.description || '' }}
       />
     </section>
@@ -218,23 +218,23 @@ function SectionIndex({ resource, sections }: { resource: any; sections: any[] }
         return (
           <div
             key={section.id}
-            className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5"
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/40"
           >
             <div className="flex items-start gap-3">
               {section.icon && (
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-slate-800 text-sm">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-sm dark:bg-slate-800">
                   {section.icon}
                 </span>
               )}
               <div className="min-w-0">
-                <h2 className="text-xl font-semibold text-slate-100">
+                <h2 className="text-xl font-semibold text-slate-950 dark:text-slate-100">
                   {section.title}
                 </h2>
-                <p className="mt-2 text-sm text-slate-400">
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                   Opens section page
                 </p>
                 {section.description && (
-                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500">
+                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-500">
                     {stripHtml(section.description)}
                   </p>
                 )}
@@ -252,12 +252,12 @@ function SectionIndex({ resource, sections }: { resource: any; sections: any[] }
                 <a
                   href={downloadUrl}
                   download
-                  className="rounded-xl border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800"
+                  className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
                 >
                   Download
                 </a>
               ) : (
-                <span className="rounded-xl border border-slate-800 px-4 py-2 text-sm font-semibold text-slate-600">
+                <span className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-400 dark:border-slate-800 dark:text-slate-600">
                   Download
                 </span>
               )}
@@ -369,25 +369,25 @@ function SectionStudyPage({
     searchedQuestions.length > 0
 
   return (
-    <div className="min-h-screen bg-[#111111] text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-950 dark:bg-[#111111] dark:text-white">
       <main className="mx-auto max-w-[1260px] px-6 py-10 font-sans">
       <div className="mb-8">
         <Link
           href={`/resources/${resource.slug}` as any}
-          className="mb-6 inline-flex h-[52px] items-center rounded-xl border border-[#334155] bg-[#171717] px-5 text-lg font-semibold text-white transition-colors hover:bg-[#1f2937]"
+          className="mb-6 inline-flex h-[52px] items-center rounded-xl border border-slate-200 bg-white px-5 text-lg font-semibold text-slate-950 shadow-sm transition-colors hover:bg-slate-50 dark:border-[#334155] dark:bg-[#171717] dark:text-white dark:hover:bg-[#1f2937]"
         >
           &larr; Back
         </Link>
-        <h1 className="mb-3 text-[40px] font-bold leading-tight tracking-tight text-white">
+        <h1 className="mb-3 text-[40px] font-bold leading-tight tracking-tight text-slate-950 dark:text-white">
           {section.title}
         </h1>
-        <p className="mb-6 text-[22px] text-[#b8c3d4]">
+        <p className="mb-6 text-[22px] text-slate-600 dark:text-[#b8c3d4]">
           {resource.title}
         </p>
         <div className="flex flex-wrap items-center gap-4">
           <input
             placeholder="Search chapters, formulas, MCQs..."
-            className="h-[60px] min-w-[250px] flex-1 rounded-2xl border-2 border-[#334155] bg-[#1e1e1e] px-5 text-lg text-white placeholder:text-[#b8c3d4] transition-all focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="h-[60px] min-w-[250px] flex-1 rounded-2xl border-2 border-slate-200 bg-white px-5 text-lg text-slate-950 shadow-sm placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-[#334155] dark:bg-[#1e1e1e] dark:text-white dark:placeholder:text-[#b8c3d4]"
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
           />
@@ -409,8 +409,8 @@ function SectionStudyPage({
 
       <div className="grid gap-7 lg:grid-cols-[250px_1fr]">
         <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-2xl border border-[#334155] bg-[#1e293b] p-5 shadow-sm">
-            <div className="mb-6 text-lg font-bold text-white">
+          <div className="sticky top-24 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-[#334155] dark:bg-[#1e293b]">
+            <div className="mb-6 text-lg font-bold text-slate-950 dark:text-white">
               Chapters
             </div>
             <nav>
@@ -421,8 +421,8 @@ function SectionStudyPage({
                       href={`/resources/${resource.slug}/${section.slug}/${chapter.slug}` as any}
                       className={`block rounded px-3 py-2 text-lg leading-6 transition ${
                         selectedChapterSlug === chapter.slug
-                          ? 'bg-[#233a5b] text-[#2f80ed]'
-                          : 'text-[#cbd5e1] hover:bg-[#233a5b] hover:text-[#2f80ed]'
+                          ? 'bg-blue-50 text-[#2f80ed] dark:bg-[#233a5b]'
+                          : 'text-slate-600 hover:bg-blue-50 hover:text-[#2f80ed] dark:text-[#cbd5e1] dark:hover:bg-[#233a5b]'
                       }`}
                     >
                       {chapter.title}
@@ -436,8 +436,8 @@ function SectionStudyPage({
 
         <article className="space-y-6">
           {section.description && (
-            <div className="rounded-2xl border border-[#334155] bg-[#151515] p-5">
-              <p className="whitespace-pre-line text-lg leading-8 text-[#cbd5e1]">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-[#334155] dark:bg-[#151515]">
+              <p className="whitespace-pre-line text-lg leading-8 text-slate-700 dark:text-[#cbd5e1]">
                 {section.description}
               </p>
             </div>
@@ -456,7 +456,7 @@ function SectionStudyPage({
           ))}
 
           {!hasContent && (
-            <p className="text-sm text-[#cbd5e1]">
+            <p className="text-sm text-slate-500 dark:text-[#cbd5e1]">
               No content found. Add chapters, formulas, PDFs, notes, and MCQs
               from the admin panel.
             </p>
@@ -503,7 +503,7 @@ function LearningView({
       )}
 
       {visibleChapters.length > 0 && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
           <ChapterNavigation
             resource={resource}
             section={selectedSection}
@@ -513,7 +513,7 @@ function LearningView({
         </div>
       )}
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
         {!selectedChapter && (
           <>
             <ContentBlocks blocks={rootBlocks} />
@@ -553,15 +553,15 @@ function SectionStudyHeader({
   downloadUrl: string | null
 }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-400">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-500 dark:text-sky-400">
         Study Section
       </p>
-      <h2 className="mt-3 text-3xl font-semibold text-slate-100">
+      <h2 className="mt-3 text-3xl font-semibold text-slate-950 dark:text-slate-100">
         {section.title}
       </h2>
       {section.description && (
-        <p className="mt-4 whitespace-pre-line leading-7 text-slate-400">
+        <p className="mt-4 whitespace-pre-line leading-7 text-slate-600 dark:text-slate-400">
           {section.description}
         </p>
       )}
@@ -583,12 +583,12 @@ function SectionStudyHeader({
           <a
             href={downloadUrl}
             download
-            className="rounded-xl border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800"
+            className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             Download
           </a>
         ) : (
-          <span className="rounded-xl border border-slate-800 px-4 py-2 text-sm font-semibold text-slate-600">
+          <span className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-400 dark:border-slate-800 dark:text-slate-600">
             Download
           </span>
         )}
@@ -599,8 +599,8 @@ function SectionStudyHeader({
 
 function SectionStat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
-      <p className="text-2xl font-semibold text-slate-100">{value}</p>
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+      <p className="text-2xl font-semibold text-slate-950 dark:text-slate-100">{value}</p>
       <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
         {label}
       </p>
@@ -621,10 +621,10 @@ function ChapterNavigation({
 }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-400">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-500 dark:text-sky-400">
         Table of Contents
       </p>
-      <h3 className="mt-2 text-lg font-semibold text-slate-100">Chapters</h3>
+      <h3 className="mt-2 text-lg font-semibold text-slate-950 dark:text-slate-100">Chapters</h3>
       <div className="mt-4 grid gap-2">
         {chapters.map((chapter) => {
           const href = section
@@ -638,7 +638,7 @@ function ChapterNavigation({
               className={`rounded-xl border px-4 py-3 text-sm font-medium transition ${
                 selectedChapter?.id === chapter.id
                   ? 'border-sky-500 bg-sky-500 text-slate-950'
-                  : 'border-slate-800 bg-slate-950/60 text-slate-300 hover:border-sky-500/50'
+                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-sky-500/50 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300'
               }`}
             >
               {chapter.title}
@@ -662,13 +662,13 @@ function ChapterContent({
   if (study) {
     return (
       <article className="space-y-6">
-        <div className="rounded-2xl border border-[#334155] bg-[#111111] px-5 py-6">
-          <h2 className="text-[31px] font-bold leading-tight text-white">
+        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-6 shadow-sm dark:border-[#334155] dark:bg-[#111111]">
+          <h2 className="text-[31px] font-bold leading-tight text-slate-950 dark:text-white">
             {chapter.title}
           </h2>
         </div>
         {chapter.description && (
-          <p className="whitespace-pre-line text-lg leading-8 text-[#cbd5e1]">
+          <p className="whitespace-pre-line text-lg leading-8 text-slate-700 dark:text-[#cbd5e1]">
             {chapter.description}
           </p>
         )}
@@ -731,12 +731,12 @@ function ContentBlocks({
         if (study) {
           return (
             <div key={block.id} className="space-y-4">
-              <h3 className="text-2xl font-bold text-white">{block.title}</h3>
+              <h3 className="text-2xl font-bold text-slate-950 dark:text-white">{block.title}</h3>
               {parsedTable ? (
                 <StudyTable table={parsedTable} />
               ) : block.body ? (
                 <div
-                  className="resource-content resource-content-study text-lg leading-8 text-[#e2e8f0]"
+                  className="resource-content resource-content-study text-lg leading-8 text-slate-700 dark:text-[#e2e8f0]"
                   dangerouslySetInnerHTML={{ __html: block.body }}
                 />
               ) : null}
@@ -753,7 +753,7 @@ function ContentBlocks({
                   <a
                     href={fileUrl}
                     download
-                    className="rounded-xl border border-[#334155] px-4 py-2 text-sm font-semibold text-[#cbd5e1] hover:bg-[#1e293b]"
+                    className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-[#334155] dark:text-[#cbd5e1] dark:hover:bg-[#1e293b]"
                   >
                     Download
                   </a>
@@ -824,7 +824,7 @@ function StudyTable({
   const headers = table.headers.slice(0, 2)
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#334155] bg-[#1e293b] p-5">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-[#334155] dark:bg-[#1e293b]">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[760px] border-collapse text-left text-lg">
           <thead>
@@ -832,12 +832,12 @@ function StudyTable({
               {headers.map((header) => (
                 <th
                   key={header}
-                  className="border border-[#48617f] bg-[#24459b] px-4 py-4 font-bold uppercase text-white"
+                  className="border border-slate-300 bg-blue-100 px-4 py-4 font-bold uppercase text-slate-950 dark:border-[#48617f] dark:bg-[#24459b] dark:text-white"
                 >
                   {header}
                 </th>
               ))}
-              <th className="w-[180px] border border-[#48617f] bg-[#24459b] px-4 py-4 font-bold uppercase text-white">
+              <th className="w-[180px] border border-slate-300 bg-blue-100 px-4 py-4 font-bold uppercase text-slate-950 dark:border-[#48617f] dark:bg-[#24459b] dark:text-white">
                 Notes
               </th>
             </tr>
@@ -846,21 +846,21 @@ function StudyTable({
             {table.rows.map((row, index) => (
               <tr
                 key={`${row.join('-')}-${index}`}
-                className={index % 2 === 0 ? 'bg-[#1e293b]' : 'bg-[#111827]'}
+                className={index % 2 === 0 ? 'bg-white dark:bg-[#1e293b]' : 'bg-slate-50 dark:bg-[#111827]'}
               >
                 {headers.map((_, cellIndex) => (
                   <td
                     key={cellIndex}
-                    className="border border-[#48617f] px-4 py-4 align-top text-white"
+                    className="border border-slate-300 px-4 py-4 align-top text-slate-800 dark:border-[#48617f] dark:text-white"
                   >
                     {row[cellIndex] ?? ''}
                   </td>
                 ))}
-                <td className="border border-[#48617f] p-2 align-top">
+                <td className="border border-slate-300 p-2 align-top dark:border-[#48617f]">
                   <textarea
                     aria-label="Add notes"
                     placeholder="Add notes..."
-                    className="min-h-[74px] w-full resize-y rounded border border-[#48617f] bg-[#0f172a] p-3 text-base text-white placeholder:text-[#b8c3d4] focus:border-[#2f80ed] focus:outline-none"
+                    className="min-h-[74px] w-full resize-y rounded border border-slate-300 bg-white p-3 text-base text-slate-950 placeholder:text-slate-400 focus:border-[#2f80ed] focus:outline-none dark:border-[#48617f] dark:bg-[#0f172a] dark:text-white dark:placeholder:text-[#b8c3d4]"
                   />
                 </td>
               </tr>
@@ -892,12 +892,12 @@ function LegacyFiles({
           return (
             <div
               key={file.id}
-              className="rounded-2xl border border-[#334155] bg-[#151515] p-4"
+              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-[#334155] dark:bg-[#151515]"
             >
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2f80ed]">
                 {file.type}
               </p>
-              <h4 className="mt-2 text-lg font-semibold text-white">
+              <h4 className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">
                 {file.title}
               </h4>
               {fileUrl && (
@@ -913,7 +913,7 @@ function LegacyFiles({
                   <a
                     href={fileUrl}
                     download
-                    className="rounded-xl border border-[#334155] px-4 py-2 text-sm font-semibold text-[#cbd5e1] hover:bg-[#1e293b]"
+                    className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-[#334155] dark:text-[#cbd5e1] dark:hover:bg-[#1e293b]"
                   >
                     Download
                   </a>
@@ -970,17 +970,17 @@ function LegacyFiles({
 
 function AdminEmptyState({ section }: { section: any }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 p-6">
-      <h3 className="text-xl font-semibold text-slate-100">
+    <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-950/40">
+      <h3 className="text-xl font-semibold text-slate-950 dark:text-slate-100">
         Add study content from admin
       </h3>
-      <p className="mt-3 leading-7 text-slate-400">
+      <p className="mt-3 leading-7 text-slate-600 dark:text-slate-400">
         This section is connected to the backend. Add chapters, notes, formulas,
         PDFs, practice content, videos, and MCQs from the admin panel and they
         will appear here automatically.
       </p>
       {section && (
-        <p className="mt-4 rounded-xl bg-slate-900 px-4 py-3 text-sm text-slate-400">
+        <p className="mt-4 rounded-xl bg-white px-4 py-3 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-400">
           Admin path: Sub items - {section.title} - add Chapters, Content
           blocks, Files, or Questions.
         </p>
@@ -1005,7 +1005,7 @@ function Questions({
       <h3
         className={`text-lg font-semibold ${
           study
-            ? 'text-2xl font-bold text-white'
+            ? 'text-2xl font-bold text-slate-950 dark:text-white'
             : light
               ? 'text-slate-950 dark:text-slate-100'
               : 'text-slate-100'
@@ -1048,7 +1048,7 @@ function MCQQuestion({
     <div
       className={`rounded-2xl border p-4 ${
         study
-          ? 'border-[#334155] bg-[#151515]'
+          ? 'border-slate-200 bg-white shadow-sm dark:border-[#334155] dark:bg-[#151515]'
           : light
           ? 'border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900'
           : 'border-slate-800 bg-slate-950/60'
@@ -1057,7 +1057,7 @@ function MCQQuestion({
       <p
         className={`mb-4 font-medium ${
           study
-            ? 'text-white'
+            ? 'text-slate-950 dark:text-white'
             : light
               ? 'text-slate-950 dark:text-slate-100'
               : 'text-slate-100'
@@ -1074,7 +1074,7 @@ function MCQQuestion({
               selectedAnswer === option.key
                 ? 'border-sky-500 bg-sky-500/10 text-sky-300'
                 : study
-                  ? 'border-[#334155] bg-[#0f172a] text-[#cbd5e1] hover:border-[#2f80ed]'
+                  ? 'border-slate-200 bg-slate-50 text-slate-700 hover:border-[#2f80ed] dark:border-[#334155] dark:bg-[#0f172a] dark:text-[#cbd5e1]'
                 : light
                   ? 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300'
                   : 'border-slate-700 bg-slate-800/50 text-slate-300 hover:border-slate-600'

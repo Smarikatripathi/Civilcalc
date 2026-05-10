@@ -137,10 +137,10 @@ export default function ResourceExplorer({
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {!hideHeader && (
         <div className="text-center mb-10">
-          <h1 className="text-5xl sm:text-6xl font-semibold tracking-tight text-slate-100">
+          <h1 className="text-5xl sm:text-6xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
             {title}
           </h1>
-          <p className="mt-5 text-base sm:text-lg text-slate-300 max-w-3xl mx-auto leading-8">
+          <p className="mt-5 text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-8">
             {description}
           </p>
         </div>
@@ -151,7 +151,7 @@ export default function ResourceExplorer({
           <label htmlFor="resource-search" className="sr-only">Search resources</label>
           <input
             id="resource-search"
-            className="w-full rounded-3xl border border-slate-800 bg-slate-900 px-5 py-4 text-slate-100 placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+            className="w-full rounded-3xl border border-slate-200 bg-white px-5 py-4 text-slate-950 shadow-sm placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
             placeholder="Search everything: NBC 105, Kathmandu rates, IS 456, ACI 318..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -160,10 +160,10 @@ export default function ResourceExplorer({
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <label htmlFor="resource-sort" className="text-sm text-slate-400">Sort by</label>
+            <label htmlFor="resource-sort" className="text-sm text-slate-500 dark:text-slate-400">Sort by</label>
             <select
               id="resource-sort"
-              className="rounded-2xl border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+              className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-950 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               value={sort}
               onChange={(e) => setSort(e.target.value)}
             >
@@ -174,7 +174,7 @@ export default function ResourceExplorer({
               ))}
             </select>
           </div>
-          <div className="text-sm text-slate-400">{filtered.length} resources found</div>
+          <div className="text-sm text-slate-500 dark:text-slate-400">{filtered.length} resources found</div>
         </div>
       </div>
 
@@ -182,7 +182,7 @@ export default function ResourceExplorer({
         {!hideCategoryPills && (
           <div className="flex flex-wrap gap-2">
             <button
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedCategory === 'all' ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedCategory === 'all' ? 'bg-sky-500 text-slate-950' : 'bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-0 dark:hover:bg-slate-700'}`}
               onClick={() => setSelectedCategory('all')}
             >
               All {initialResources.length}
@@ -190,11 +190,11 @@ export default function ResourceExplorer({
             {categories.map((category) => (
               <button
                 key={category}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedCategory === category ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedCategory === category ? 'bg-sky-500 text-slate-950' : 'bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-0 dark:hover:bg-slate-700'}`}
                 onClick={() => setSelectedCategory(category)}
               >
                 <span>{categoryLabels[category] ?? category}</span>
-                <span className="ml-2 inline-flex items-center rounded-full bg-slate-950 px-2 py-0.5 text-[0.7rem] font-semibold text-slate-400">
+                <span className="ml-2 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] font-semibold text-slate-500 dark:bg-slate-950 dark:text-slate-400">
                   {categoryCounts[category]}
                 </span>
               </button>
@@ -204,7 +204,7 @@ export default function ResourceExplorer({
 
         <div className="flex flex-wrap gap-2">
           <button
-            className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedRegion === 'all' ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedRegion === 'all' ? 'bg-sky-500 text-slate-950' : 'bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-0 dark:hover:bg-slate-700'}`}
             onClick={() => setSelectedRegion('all')}
           >
             All {initialResources.length}
@@ -212,11 +212,11 @@ export default function ResourceExplorer({
           {regions.map((region) => (
             <button
               key={region}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedRegion === region ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedRegion === region ? 'bg-sky-500 text-slate-950' : 'bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-0 dark:hover:bg-slate-700'}`}
               onClick={() => setSelectedRegion(region)}
             >
               <span>{regionLabels[region] ?? region}</span>
-              <span className="ml-2 inline-flex items-center rounded-full bg-slate-950 px-2 py-0.5 text-[0.7rem] font-semibold text-slate-400">
+              <span className="ml-2 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] font-semibold text-slate-500 dark:bg-slate-950 dark:text-slate-400">
                 {regionCounts[region]}
               </span>
             </button>
@@ -242,7 +242,7 @@ export default function ResourceExplorer({
             <Link
               key={resource.id}
               href={`/resources/${resource.slug}`}
-              className="group block rounded-3xl border border-slate-800 bg-slate-950/95 p-6 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.8)] transition duration-300 hover:-translate-y-1 hover:border-sky-500/40 hover:shadow-[0_25px_75px_-35px_rgba(56,189,248,0.35)]"
+              className="group block rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.35)] transition duration-300 hover:-translate-y-1 hover:border-sky-500/40 hover:shadow-[0_25px_75px_-35px_rgba(56,189,248,0.35)] dark:border-slate-800 dark:bg-slate-950/95 dark:shadow-[0_20px_60px_-30px_rgba(15,23,42,0.8)]"
             >
               {thumbnailUrl && (
                 <img
@@ -259,30 +259,30 @@ export default function ResourceExplorer({
                   </div>
                   <div className="space-y-2">
                     <div className="flex flex-wrap gap-2">
-                      <span className="rounded-full bg-slate-900/90 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-300">
+                      <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-600 dark:bg-slate-900/90 dark:text-slate-300">
                         {categoryStyle.label}
                       </span>
-                      <span className="rounded-full bg-slate-900/90 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-300">
+                      <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-600 dark:bg-slate-900/90 dark:text-slate-300">
                         {regionLabels[resource.region] ?? resource.region}
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900 text-slate-400 transition group-hover:text-white">
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-500 transition group-hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:group-hover:text-white">
                   <span>★</span>
                 </div>
               </div>
 
-              <h2 className="text-2xl font-semibold text-slate-100 leading-tight mb-3">
+              <h2 className="text-2xl font-semibold text-slate-950 leading-tight mb-3 dark:text-slate-100">
                 {resource.title}
               </h2>
-              <p className="text-slate-400 line-clamp-3 mb-6">
+              <p className="text-slate-600 line-clamp-3 mb-6 dark:text-slate-400">
                 {stripHtml(resource.description)}
               </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="space-y-1 text-sm text-slate-400">
-                  <p className="text-slate-300">{itemCount ? `${itemCount} sub-items` : 'Resource'}</p>
+                <div className="space-y-1 text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-slate-700 dark:text-slate-300">{itemCount ? `${itemCount} sub-items` : 'Resource'}</p>
                   <p>{`Updated ${updatedDate}`}</p>
                 </div>
               </div>
@@ -292,8 +292,8 @@ export default function ResourceExplorer({
       </div>
 
       {filtered.length === 0 && (
-        <div className="mt-16 rounded-3xl border border-slate-800 bg-slate-900 p-10 text-center">
-          <p className="text-slate-300">No resources match your search or filter selection.</p>
+        <div className="mt-16 rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-slate-600 dark:text-slate-300">No resources match your search or filter selection.</p>
         </div>
       )}
     </section>
